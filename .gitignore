@@ -1,0 +1,8 @@
+.vs
+obj
+bin
+packages
+*.TMP
+*.user
+Debug
+.DS_Store
