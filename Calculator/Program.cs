@@ -18,5 +18,11 @@ foreach(char tempChar in inputStrToArray)
         isOk = true;
         continue;
     }
+
+    if (tempChar >= '0' && tempChar <= '9')
+    {
+        isOk = true;
+        continue;
+    }
 }
 Console.WriteLine("Hello, World!");
