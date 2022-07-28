@@ -1,2 +1,2 @@
 # calculator
-An dotnet core C# calculator
+A dotnet core C# calculator
