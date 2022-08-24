@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.RegularExpressions;
+
 namespace Calculator
 {
     public class StringChecker
@@ -46,6 +48,13 @@ namespace Calculator
                 return false;
             }
             return true;
+        }
+
+        public bool ValidateRegularExpression(string input)
+        {
+            string strRegex = @"^[0 - 9\+\-x\/\(\)\^\.]+$";
+            Regex regex = new Regex(strRegex, RegexOptions.Compiled);
+            return regex.IsMatch(input);
         }
 
         public bool Checker_Contains(string input)
