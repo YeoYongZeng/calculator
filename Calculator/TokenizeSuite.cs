@@ -5,13 +5,33 @@ namespace Calculator
 {
     public struct Token
     {
+        public string ErrorMsg { get; set; }
+        public double DataF { get; set; } 
         public string Data { get; set; }
         public TokenType Type { get; set; }
 
         public Token(string data, TokenType type)
         {
+            this.ErrorMsg = string.Empty;
+            this.DataF = 0;
             this.Data = data;
             this.Type = type;
+        }
+
+        public Token(string errorMsg)
+        {
+            this.ErrorMsg = errorMsg;
+            this.Type = TokenType.error;
+            this.DataF = 0;
+            this.Data = string.Empty;
+        }
+
+        public Token(string data, double dataF)
+        {
+            this.ErrorMsg = string.Empty;
+            this.DataF = dataF;
+            this.Data = data;
+            this.Type = TokenType.num;
         }
 
         public bool IsOperand()
@@ -23,7 +43,7 @@ namespace Calculator
 
         public bool IsOperator()
         {
-            if (Type != TokenType.num && Type != TokenType.eos)
+            if (Type != TokenType.num && Type != TokenType.eos && Type != TokenType.error)
                 return true;
             return false;
         }
@@ -31,6 +51,8 @@ namespace Calculator
 
     public class TokenizeSuite
     {
+        public List<string> ErrorMsg { get; set; } = new List<string>();
+
         private Token OperatorTokenize(char chr)
             => chr switch
             {
@@ -41,11 +63,10 @@ namespace Calculator
                 '^' => new Token("^", TokenType.pow),
                 '(' => new Token("(", TokenType.leftParam),
                 ')' => new Token(")", TokenType.rightParam),
-                _ => new Token(string.Empty, TokenType.error),
+                _ => new Token($"Unknown char: {chr}"),
             };
-
             
-        public bool CheckIsValidNum(string input)
+        private bool CheckIsValidNum(string input)
         {
             bool hasDot = false;
             foreach (char chr in input.ToCharArray())
@@ -65,9 +86,17 @@ namespace Calculator
         private Token OperandTokenize(string input)
         {
             if (CheckIsValidNum(input) == false)
-                return new Token(string.Empty, TokenType.error);
+            {
+                this.ErrorMsg.Add($"Invalid number {input}");
+                return new Token($"Invalid number {input}");
+            }
 
-            return new Token(input, TokenType.num);
+            if (double.TryParse(input, out var val) == false)
+            {
+                this.ErrorMsg.Add($"Unable convert to double {input}");
+                return new Token($"Unable convert to double {input}");
+            }
+            return new Token(input, val);
         }
 
         private List<Token> RetrieveAllToken(string inputStr)
@@ -84,16 +113,23 @@ namespace Calculator
                     continue;
                 }
 
-                tokens.Add(operatorToken);
+                if(string.IsNullOrWhiteSpace(num))
+                {
+                    tokens.Add(operatorToken);
+                    num = string.Empty;
+                    continue;
+                }
 
                 var operandToken = OperandTokenize(num);
                 if (operandToken.IsOperand() == false)
                     return new List<Token>();
 
+                tokens.Add(operandToken);
+                tokens.Add(operatorToken);
                 num = string.Empty;
             }
 
-            if (string.IsNullOrEmpty(num) == false)
+            if (string.IsNullOrEmpty(num))
                 return tokens;
 
             var lastOperandToken = OperandTokenize(num);
